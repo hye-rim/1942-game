@@ -230,11 +230,29 @@ test('the boss comes when the stage time is up, and beating it clears the stage 
   assert.ok(st.schedule.length > 10);
 });
 
-test('extra life at 20000 points', () => {
+test('extra life at the first extra life score, then every so often', () => {
+  const low = calm();
+  low.score = L.EXTRA_LIFE_AT - 1000;
+  L.killEnemy(low, enemy(low, 'zero', 50, 50), true);
+  assert.strictEqual(low.lives, L.START_LIVES, 'not yet');
   const st = calm();
-  st.score = 19950;
+  st.score = L.EXTRA_LIFE_AT - 50;
   L.killEnemy(st, enemy(st, 'zero', 50, 50), true);
   assert.strictEqual(st.lives, L.START_LIVES + 1);
+  st.score = L.EXTRA_LIFE_AT + L.EXTRA_LIFE_EVERY - 50;
+  L.killEnemy(st, enemy(st, 'zero', 50, 50), true);
+  assert.strictEqual(st.lives, L.START_LIVES + 2, 'the next one comes after the interval');
+});
+
+test('later stages are faster but never past the speed cap', () => {
+  let prev = 0;
+  for (let stage = 1; stage <= 15; stage++) {
+    const sp = L.makeSchedule(stage, L.rng(1))[0].pat.speed;
+    assert.ok(sp >= prev, 'never slower than the stage before');
+    assert.ok(sp <= 1.4 + 1e-9, 'capped');
+    prev = sp;
+  }
+  assert.ok(prev > 1.3, 'reaches the cap eventually');
 });
 
 test('random play for several minutes keeps everything sane', () => {

@@ -5,10 +5,10 @@ const LOGIC_1942 = (() => {
 const W = 224, H = 272;
 const PLAYER_SPEED = 130, PLAYER_R = 4.5;
 const SHOT_SPEED = 330, SHOT_COOL = 0.15, MAX_SHOTS = 14;
-const START_LIVES = 3, ROLLS_PER_STAGE = 3, ROLL_TIME = 1, INVULN_AFTER_DEATH = 2.5, RESPAWN_TIME = 1.5;
+const START_LIVES = 4, ROLLS_PER_STAGE = 3, ROLL_TIME = 1, INVULN_AFTER_DEATH = 2.5, RESPAWN_TIME = 1.5;
 const STAGE_TIME = 52;                                // 이 시간이 지나면 보스가 나온다
 const POINTS = { zero: 100, red: 100, bomber: 800, boss: 5000, pow: 500 };
-const EXTRA_LIFE_AT = 20000, EXTRA_LIFE_EVERY = 80000;
+const EXTRA_LIFE_AT = 15000, EXTRA_LIFE_EVERY = 60000;
 const ITEM_TYPES = ['quad', 'wing', 'bomb', 'roll', 'life'];
 
 const rng = (seed) => {                                // mulberry32 (시험용 고정 난수)
@@ -55,7 +55,7 @@ function pathPos(p, age) {
 // 한 단계에서 나올 비행기 목록(시각 순). 단계가 오를수록 빠르고 많이 쏜다
 function makeSchedule(stage, r) {
   const list = [];
-  const sp = Math.min(1.6, 1 + 0.07 * (stage - 1));
+  const sp = Math.min(1.4, 1 + 0.05 * (stage - 1));
   const add = (at, kind, pat, group, gsize) => list.push({ at, kind, pat: { ...pat, speed: sp }, group, gsize });
   let group = 0;
   const groupOf = (n) => { const g = ++group; return { g, n }; };
@@ -264,7 +264,7 @@ function sub(st, h, input) {
       else {
         e.x = W / 2 + 70 * Math.sin((e.age - 1) * 0.7);
         e.shootT -= h; e.ringT -= h;
-        if (e.shootT <= 0 && p.alive) { enemyFire(st, e, 5, 0.22, Math.min(150, 95 + 6 * st.stage)); e.shootT = Math.max(0.7, 1.5 - 0.08 * st.stage); }
+        if (e.shootT <= 0 && p.alive) { enemyFire(st, e, 5, 0.22, Math.min(125, 92 + 4 * st.stage)); e.shootT = Math.max(0.7, 1.5 - 0.08 * st.stage); }
         if (e.ringT <= 0) {
           const n = 12;
           for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 + e.age; st.ebullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * 70, vy: Math.sin(a) * 70 }); }
@@ -282,8 +282,8 @@ function sub(st, h, input) {
       if (e.shootT <= 0) {
         const onScreen = e.x > 8 && e.x < W - 8 && e.y > 8 && e.y < H - 70;
         if (onScreen && p.alive) {
-          if (e.kind === 'bomber') enemyFire(st, e, 3, 0.25, 85 + 4 * st.stage);
-          else if (st.rand() < Math.min(0.9, 0.35 + 0.08 * st.stage)) enemyFire(st, e, 1, 0, Math.min(135, 78 + 6 * st.stage));
+          if (e.kind === 'bomber') enemyFire(st, e, 3, 0.25, Math.min(105, 85 + 3 * st.stage));
+          else if (st.rand() < Math.min(0.75, 0.3 + 0.06 * st.stage)) enemyFire(st, e, 1, 0, Math.min(115, 76 + 4 * st.stage));
         }
         e.shootT = (e.kind === 'bomber' ? 1.7 : 1.6) + st.rand() * 2.4;
       }
@@ -345,7 +345,7 @@ function bossDown(st, e) {
 }
 
 return {
-  W, H, PLAYER_SPEED, PLAYER_R, START_LIVES, ROLLS_PER_STAGE, ROLL_TIME, STAGE_TIME, POINTS, ITEM_TYPES,
+  W, H, PLAYER_SPEED, PLAYER_R, START_LIVES, EXTRA_LIFE_AT, EXTRA_LIFE_EVERY, ROLLS_PER_STAGE, ROLL_TIME, STAGE_TIME, POINTS, ITEM_TYPES,
   rng, newGame, startStage, step, pathPos, makeSchedule, spawnEnemy, dropItem, takeItem, killEnemy, firePlayer,
 };
 })();
